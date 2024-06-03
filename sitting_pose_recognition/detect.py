@@ -69,19 +69,14 @@ def detect_init(imgsz, weights_path, bodypix_model_path, checkpoint_path_half, c
 
     net_model_half = Model.get_net(net_half)
     net_model_whole = Model.get_net(net_whole)
-    checkpoint_half = torch.load(checkpoint_path_half, map_location=device)  # 选择模型
-    checkpoint_whole = torch.load(checkpoint_path_whole, map_location=device)  # 选择模型
+    checkpoint_half = torch.load(checkpoint_path_half, map_location=device)  # Image classification model
+    checkpoint_whole = torch.load(checkpoint_path_whole, map_location=device)
     net_model_half.load_state_dict(checkpoint_half["state_dict"])
     net_model_whole.load_state_dict(checkpoint_whole["state_dict"])
     net_model_half.to(device)
     net_model_whole.to(device)
 
     return imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device
-
-
-# def thread(q1, delay):
-#     while not q1.empty():
-#         time.sleep(delay)
 
 
 def detect_one(image, imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device, colored, save_img, pic_num):
@@ -132,8 +127,8 @@ def detect_one(image, imgsz, names, model, net_model_half, net_model_whole, body
 
                     image = cv2.imread(image_path)
                     # image = numpy.uint8(image)
-                    # 识别单张
-                    if body == '全':
+                    # Identify individual picture
+                    if body == 'whole':
                         # wwhole += 1
                         res = test_one_image_0(image, net_model_whole, device) + '(' + direction + ')'
                     else:

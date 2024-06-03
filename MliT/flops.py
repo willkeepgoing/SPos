@@ -4,6 +4,7 @@ from thop import profile
 from tf_bodypix.api import load_model
 import Model
 
+# Calculate Flops
 print('==> Building model..')
 
 net = 'MobilNet'

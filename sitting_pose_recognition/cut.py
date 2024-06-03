@@ -1,6 +1,7 @@
 import cv2
 
 
+# Crop to obtain a single person image
 def cut_person(location, img, output):
     # img = Image.open(input)
     height = len(img)

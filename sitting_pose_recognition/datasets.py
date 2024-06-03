@@ -13,51 +13,13 @@ from shutil import copy
 from PIL import Image
 import math
 
-random.seed(666)  # 设置随机种子 为了保证每次划分训练集和测试机的是相同的
-
-'''
-
-#划分训练集和测试集
-# ratio 为划分为测试集的比例
-def divide_data(data_path,ratio):
-    files = parse_data_config(data_path)
-    temp = np.array(files)
-    test_data = []
-    train_data = []
-    for i in range(config.num_classes):
-        temp_data = []
-        for data in temp:
-            if data[1] == str(i):
-                temp_data.append(data)
-        np.random.shuffle(np.array(temp_data))
-        test_data =test_data + temp_data[:int(ratio * len(temp_data))]
-        train_data = train_data + temp_data[int(ratio*len(temp_data))+1:]
-    # np.random.shuffle(temp)
-    # test_data = files[:int(ratio * len(files))]
-    # train_data = files[int(ratio*len(files))+1:]
-
-    # 从训练集中挑选 10 中图片保存到 example 文件夹中
-    if not os.path.exists(config.example_folder):
-        os.mkdir(config.example_folder)
-    else:
-        for i in os.listdir(config.example_folder):
-            os.remove(os.path.join(config.example_folder+i))
-    for i in range(10):
-        index = random.randint(0,len(test_data)-1)  # 随机生成图片的索引
-        copy(test_data[index][0],config.example_folder)  # 将挑选的图像复制到example文件夹
-
-    return test_data, train_data
-'''
+random.seed(666)  # Set random seeds
 
 
-# 2. 对于数据集的解析
+#  Dataset parsing
 def get_files(file_dir, ratio):
     mid = []
     labels_mid = []
-    # left = []
-    # labels_left = []
-    # right = []
-    # labels_right = []
     stand = []
     labels_stand = []
     head = []
@@ -67,12 +29,6 @@ def get_files(file_dir, ratio):
     for file in os.listdir(file_dir + 'mid'):
         mid.append(file_dir + 'mid' + '/' + file)
         labels_mid.append(0)
-    # for file in os.listdir(file_dir + 'left'):
-    #     left.append(file_dir + 'left' + '/' + file)
-    #     labels_left.append(1)
-    # for file in os.listdir(file_dir + 'right'):
-    #     right.append(file_dir + 'right' + '/' + file)
-    #     labels_right.append(2)
     for file in os.listdir(file_dir + 'stand'):
         stand.append(file_dir + 'stand' + '/' + file)
         labels_stand.append(1)
@@ -108,7 +64,7 @@ def get_files(file_dir, ratio):
     return test_data, train_data
 
 
-# 这个数据集类的作用就是加载训练和测试时的数据
+# The purpose of a dataset class is to load training and testing data
 class datasets(Dataset):
     def __init__(self, data, transform=None, test=False):
         imgs = []
@@ -120,7 +76,7 @@ class datasets(Dataset):
         for i in self.data:
             imgs.append(i[0])
             self.imgs = imgs
-            labels.append(int(i[1]))  # pytorch中交叉熵需要从0开始
+            labels.append(int(i[1]))  # ross entropy in pytorch needs to start from 0
             self.labels = labels
 
     def __getitem__(self, index):
@@ -154,7 +110,7 @@ class datasets(Dataset):
         return len(self.data)  # self.len
 
 
-def collate_fn(batch): # 表示如何将多个样本拼接成一个batch
+def collate_fn(batch): # Splicing multiple samples into one batch
     imgs = []
     label = []
     for sample in batch:
@@ -164,7 +120,6 @@ def collate_fn(batch): # 表示如何将多个样本拼接成一个batch
     return torch.stack(imgs, 0), label
 
 
-# 用于调试代码
 if __name__ == '__main__':
     test_data, _ = get_files(config.data_folder, config.ratio)
     _, train_data= get_files(config.data_folder, config.ratio)

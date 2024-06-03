@@ -11,7 +11,6 @@ import collections
 
 def func(img, output_path, file_name, bodypix_model, colored, save_img, pic_num):
     np.set_printoptions(threshold=10000)
-    # out_name = 'output_body.txt'
     body = ''
     direction = ''
 
@@ -23,13 +22,13 @@ def func(img, output_path, file_name, bodypix_model, colored, save_img, pic_num)
     if colored:
         coloured_mask = result.get_colored_part_mask(mask)
 
-        # Reno模块：去除非当前个体
+        # Reno: removing non current individuals
         colored_mask = Reno(coloured_mask)
 
         color_pic = coloured_mask[:, :, 1]
         color_pic = list(chain.from_iterable(color_pic))
 
-        # PAF模块：面部朝向和下身遮挡情况判断
+        # PAF: judgment of facial orientation and lower body occlusion
         body, direction =APF(color_pic, colored_mask)
 
         if save_img:
@@ -55,29 +54,29 @@ def APF(color_pic, colored_mask):
     right = d[64]
     down = d[101] + d[150] + d[199] + d[234] + d[247] + d[81]
 
-    # 若超过下身比例超过十分之一
+    # If the proportion of the lower body exceeds 0.1
     if down > len(colored_mask) * len(colored_mask[0]) / 10:
-        body = '全'
+        body = 'whole'
     else:
-        body = '半'
+        body = 'half'
 
     # print(str(left) + '  ' + str(right))
     if left > right * 1.5:
-        direction = ' 右'
+        direction = ' right'
     elif right > left * 1.5:
-        direction = ' 左'
+        direction = ' left'
     else:
-        direction = ' 中'
+        direction = ' mid'
     return body, direction
 
 
 def Reno(colored_mask):
     b = colored_mask
-    # 初始化visited数组
+    # Initialize visited array
     m, n = len(b), len(b[0])
     visited = [[0] * n for _ in range(m)]
 
-    # 遍历上边
+    # Traverse Up
     i = 0
     contour = []
     for j in range(n):
@@ -86,7 +85,7 @@ def Reno(colored_mask):
             length = len(contour)
             if length < m + n:
                 visited, b = breadthFirstSearch(b, visited, i, j)
-    # 遍历下边
+    # Traverse Down
     i = m - 1
     contour = []
     for j in range(n):
@@ -95,7 +94,7 @@ def Reno(colored_mask):
             length = len(contour)
             if length < m + n:
                 visited, b = breadthFirstSearch(b, visited, i, j)
-    # 遍历左边
+    # Traverse Left
     contour = []
     j = 0
     for i in range(m):
@@ -104,7 +103,7 @@ def Reno(colored_mask):
             length = len(contour)
             if length < m + n:
                 visited, b = breadthFirstSearch(b, visited, i, j)
-    # 遍历右边
+    # Traverse Right
     contour = []
     j = n - 1
     for i in range(m):
@@ -129,7 +128,7 @@ def breadthFirstSearch(b, visited, i, j):
         visited[x][y] = 1
         b[x][y] = 0
 
-        # 广度优先搜索四个方向：上、下、左、右
+        # Breadth priority search in four directions: up, down, left, and right
         queue.append((x - 1, y))  # 上
         queue.append((x + 1, y))  # 下
         queue.append((x, y - 1))  # 左
@@ -141,14 +140,13 @@ def dfs_top(b, visited, i, j, contour):
     m, n = len(b), len(b[0])
     if visited[i][j] or b[i][j] == 0:
         return False, contour
-    # 访问该点
     contour.append((i, j))
     visited[i][j] = 1
 
     if len(contour) > 0 and (i == 0 or j == 0 or i == m-1 or j == n-1):
         return True, contour
 
-    # 深度优先搜索顺序为：下、右、上、左
+    # The depth first search order is: bottom, right, top, left
     flag, contour = dfs_top(b, visited, i + 1, j, contour)  # 下
     if flag:
         return flag, contour
@@ -166,14 +164,13 @@ def dfs_bottom(b, visited, i, j, contour):
     m, n = len(b), len(b[0])
     if visited[i][j] or b[i][j] == 0:
         return False, contour
-    # 访问该点
     contour.append((i, j))
     visited[i][j] = 1
 
     if len(contour) > 0 and (i == 0 or j == 0 or i == m-1 or j == n-1):
         return True, contour
 
-    # 深度优先搜索顺序为：上、右、下、左
+    # The depth first search order is: top, right, bottom, left
     flag, contour = dfs_bottom(b, visited, i - 1, j, contour)  # 上
     if flag:
         return flag, contour
@@ -191,14 +188,13 @@ def dfs_left(b, visited, i, j, contour):
     m, n = len(b), len(b[0])
     if visited[i][j] or b[i][j] == 0:
         return False, contour
-    # 访问该点
     contour.append((i, j))
     visited[i][j] = 1
 
     if len(contour) > 0 and (i == 0 or j == 0 or i == m-1 or j == n-1):
         return True, contour
 
-    # 深度优先搜索顺序为：右、下、左、上
+    # The depth first search order is: right, bottom, left, top
     flag, contour = dfs_left(b, visited, i, j + 1, contour)  # 右
     if flag:
         return flag, contour
@@ -216,14 +212,13 @@ def dfs_right(b, visited, i, j, contour):
     m, n = len(b), len(b[0])
     if visited[i][j] or b[i][j] == 0:
         return False, contour
-    # 访问该点
     contour.append((i, j))
     visited[i][j] = 1
 
     if len(contour) > 0 and (i == 0 or j == 0 or i == m-1 or j == n-1):
         return True, contour
 
-    # 深度优先搜索顺序为：左、下、右、上
+    # The depth first search order is: left, bottom, right, top
     flag, contour = dfs_right(b, visited, i, j - 1, contour)  # 左
     if flag:
         return flag, contour

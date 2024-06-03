@@ -130,14 +130,12 @@ class MliT(nn.Module):
                 Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=patch_height, p2=patch_width),
                 nn.Linear(self.patch_dim, self.dim)
             )
-        # SDC patch embedding 111
         else:
             self.to_patch_embedding = SpatialDisplacementContact(3, self.dim, patch_size, is_pe=True)
 
         self.pos_embedding = nn.Parameter(torch.randn(1, self.num_patches + 1, self.dim))
         self.cls_token = nn.Parameter(torch.randn(1, 1, self.dim))
         self.dropout = nn.Dropout(emb_dropout)
-        # 222
         self.transformer = Transformer(self.dim, self.num_patches, depth, heads, dim_head, mlp_dim_ratio, dropout,
                                     is_LT=is_LT)
 

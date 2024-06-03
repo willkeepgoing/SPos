@@ -44,7 +44,7 @@ def test_one_image(image, model):
     image = cv2.resize(image, (config.img_height, config.img_width))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img = transforms.ToTensor()(image)
-    img = img.unsqueeze(0)  # 增加一个维度
+    img = img.unsqueeze(0)  # Add a dimension
     # img = Variable(img)
     img = Variable(img).cuda()
     y_pred = model(img)
@@ -56,23 +56,23 @@ def test_one_image(image, model):
         return 'None'
     # print(classes[pred_label] + '\n')
     if pred_label == 0:
-        res = '端坐'
-        result = '这是端坐,置信度为:' + str(confidence * 100) + '%'
+        res = 'mid'
+        result = 'mid:' + str(confidence * 100) + '%'
     # elif pred_label == 1:
-    #     res = '面向左'
-    #     result = '这是面向左,置信度为:' + str(confidence * 100) + '%'
+    #     res = 'left'
+    #     result = 'left:' + str(confidence * 100) + '%'
     # elif pred_label == 2:
-    #     res = '面向右'
-    #     result = '这是面向右,置信度为:' + str(confidence * 100) + '%'
+    #     res = 'right'
+    #     result = 'right:' + str(confidence * 100) + '%'
     elif pred_label == 1:
-        res = '站立'
-        result = '这是站立,置信度为:' + str(confidence * 100) + '%'
+        res = 'stand'
+        result = 'stand:' + str(confidence * 100) + '%'
     elif pred_label == 2:
-        res = '托头'
-        result = '这是托头,置信度为:' + str(confidence * 100) + '%'
+        res = 'head'
+        result = 'head:' + str(confidence * 100) + '%'
     elif pred_label == 3:
-        res = '趴着'
-        result = '这是趴着,置信度为:' + str(confidence * 100) + '%'
+        res = 'down'
+        result = 'down:' + str(confidence * 100) + '%'
     print(result)
     return res
 
@@ -113,27 +113,25 @@ def test(test_loader, model):
         pred_label = smax_out.cpu().data.numpy()
         # print(pred_label)
         # print('\n')
-    # predict_file.write("准确率:" + str(right / num * 100) + "%")
-    # print("准确率:" + str(right / num * 100) + "%")
+    # predict_file.write("Acc:" + str(right / num * 100) + "%")
+    # print("Acc:" + str(right / num * 100) + "%")
     print("time:", time.time() - t0)
     # print(yy_pred)
     # print(yy_true)
     report = classification_report(yy_true, yy_pred, digits=5)
     print(report)
-    # print("准确率:", accuracy_score(yy_true, yy_pred))
-    # print("精确率:", precision_score(yy_true, yy_pred))
-    # print("召回率:", recall_score(yy_true, yy_pred))
+    # print("Acc:", accuracy_score(yy_true, yy_pred))
+    # print("Prec:", precision_score(yy_true, yy_pred))
+    # print("Recall:", recall_score(yy_true, yy_pred))
     # print("F1:", f1_score(yy_true, yy_pred))
     return str(right / num * 100)
 
 
 if __name__ == '__main__':
-    # 1. 定义测试集
     test_list, _ = get_files(config.test_data_folder, 1)
     print(len(test_list))
     test_loader = DataLoader(datasets(test_list, transform=None, test=True), batch_size=1, shuffle=False,
-                             collate_fn=collate_fn, num_workers=0)  # 测试时这里的batch_size = 1
-    # 2. 加载模型及其参数
+                             collate_fn=collate_fn, num_workers=0)
     model = Model.get_net('MliT_half')
     # 'vgg16' or 'resnet18' or 'resnet101' or 'GoogLeNet' or 'VIT' or 'MliT'
     checkpoint = torch.load(config.weights + 'half_MliT_CosineAnnealingLR_SGD_40_6(1.12)_1_91.8918918918919.pth')

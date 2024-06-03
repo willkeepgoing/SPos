@@ -3,6 +3,8 @@ import time
 import numpy as np
 import argparse
 
+
+# Dataset build
 parser = argparse.ArgumentParser(description='Run keypoint detection')
 parser.add_argument("--device", default="cpu", help="Device to inference on")
 parser.add_argument("--video_file", default="E:\desktop\dataset_bulid\sunjianing/left.mp4", help="Input Video")
@@ -119,7 +121,7 @@ while cv2.waitKey(1) < 0:
     # cv2.putText(frame, "OpenPose using OpenCV", (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 50, 0), 2, lineType=cv2.LINE_AA)
     # cv2.imshow('Output-Keypoints', frameCopy)
     frame1 = cv2.resize(frame1, (250, 500))
-    cv2.imwrite("E:\desktop\dataset_bulid\sunjianing/left/" + str(cnt) + '.png', frame1)  # 存储为图像,保存名为 文件夹名_数字（第几个文件）.jpg
+    cv2.imwrite("E:\desktop\dataset_bulid\sunjianing/left/" + str(cnt) + '.png', frame1)
     print(jump, "-", cnt)
     # cv2.waitKey(1)
     # cv2.imshow('Output-Skeleton', frame1)

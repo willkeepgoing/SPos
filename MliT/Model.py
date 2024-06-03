@@ -159,7 +159,7 @@ class ResNet101(nn.Module):
         self.fc2 = nn.Linear(2048, num_classes)
         # self.prelu = nn.PReLU()
 
-        # attention机制
+        # attention
         self.ca = ChannelAttention(64)
         self.sa = SpatialAttention()
 
@@ -199,11 +199,6 @@ class ResNet101(nn.Module):
 
 
 class ResNet20(nn.Module):
-    """
-    后面有bn bias可以是False
-    nn.AdaptiveAvgPool2d好用
-    nn.Sequential好用
-    """
 
     def __init__(self, in_channel=3, num_classes=4):
         super(ResNet20, self).__init__()
@@ -337,14 +332,14 @@ class GoogLeNet(nn.Module):
         super(GoogLeNet, self).__init__()
         self.aux_logits = aux_logits
 
-        self.conv1 = BasicConv2d(3, 64, kernel_size=7, stride=2, padding=3)  # BasicConv2d类
+        self.conv1 = BasicConv2d(3, 64, kernel_size=7, stride=2, padding=3)
         self.maxpool1 = nn.MaxPool2d(3, stride=2, ceil_mode=True)
 
         self.conv2 = BasicConv2d(64, 64, kernel_size=1)
         self.conv3 = BasicConv2d(64, 192, kernel_size=3, padding=1)
         self.maxpool2 = nn.MaxPool2d(3, stride=2, ceil_mode=True)
 
-        self.inception3a = Inception(192, 64, 96, 128, 16, 32, 32)  # Inception类
+        self.inception3a = Inception(192, 64, 96, 128, 16, 32, 32)
         self.inception3b = Inception(256, 128, 128, 192, 32, 96, 64)
         self.maxpool3 = nn.MaxPool2d(3, stride=2, ceil_mode=True)
 
@@ -359,7 +354,7 @@ class GoogLeNet(nn.Module):
         self.inception5b = Inception(832, 384, 192, 384, 48, 128, 128)
 
         if self.aux_logits:
-            self.aux1 = InceptionAux(512, num_classes)  # InceptionAux类
+            self.aux1 = InceptionAux(512, num_classes)
             self.aux2 = InceptionAux(528, num_classes)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -368,7 +363,6 @@ class GoogLeNet(nn.Module):
         if init_weights:
             self._initialize_weights()
 
-    # 正向传播
     def forward(self, x):
         # N x 3 x 224 x 224
         x = self.conv1(x)  # N x 64 x 112 x 112
@@ -383,12 +377,12 @@ class GoogLeNet(nn.Module):
         x = self.maxpool3(x)  # N x 480 x 14 x 14
 
         x = self.inception4a(x)  # N x 512 x 14 x 14
-        if self.training and self.aux_logits:  # eval model不执行该部分
+        if self.training and self.aux_logits:
             aux1 = self.aux1(x)
         x = self.inception4b(x)  # N x 512 x 14 x 14
         x = self.inception4c(x)  # N x 512 x 14 x 14
         x = self.inception4d(x)  # N x 528 x 14 x 14
-        if self.training and self.aux_logits:  # eval model不执行该部分
+        if self.training and self.aux_logits:
             aux2 = self.aux2(x)
         x = self.inception4e(x)  # N x 832 x 14 x 14
         x = self.maxpool4(x)  # N x 832 x 7 x 7
@@ -401,11 +395,10 @@ class GoogLeNet(nn.Module):
         x = self.dropout(x)
         x = self.fc(x)  # N x 1000 (num_classes)
 
-        if self.training and self.aux_logits:  # eval model不执行该部分
+        if self.training and self.aux_logits:
             return x, aux2, aux1
         return x
 
-    # 初始化权重
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -417,7 +410,6 @@ class GoogLeNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-# 类Inception，有四个分支
 class Inception(nn.Module):
     def __init__(self, in_channels, ch1x1, ch3x3red, ch3x3, ch5x5red, ch5x5, pool_proj):
         super(Inception, self).__init__()
@@ -426,12 +418,12 @@ class Inception(nn.Module):
 
         self.branch2 = nn.Sequential(
             BasicConv2d(in_channels, ch3x3red, kernel_size=1),
-            BasicConv2d(ch3x3red, ch3x3, kernel_size=3, padding=1)  # 保证输出大小等于输入大小
+            BasicConv2d(ch3x3red, ch3x3, kernel_size=3, padding=1)
         )
 
         self.branch3 = nn.Sequential(
             BasicConv2d(in_channels, ch5x5red, kernel_size=1),
-            BasicConv2d(ch5x5red, ch5x5, kernel_size=5, padding=2)  # 保证输出大小等于输入大小
+            BasicConv2d(ch5x5red, ch5x5, kernel_size=5, padding=2)
         )
 
         self.branch4 = nn.Sequential(
@@ -444,12 +436,12 @@ class Inception(nn.Module):
         branch2 = self.branch2(x)
         branch3 = self.branch3(x)
         branch4 = self.branch4(x)
-        # 四个分支连接起来
+        # Connect the four branches together
         outputs = [branch1, branch2, branch3, branch4]
         return torch.cat(outputs, 1)
 
 
-# 辅助分类器：类InceptionAux，包括avepool+conv+fc1+fc2
+# Auxiliary classifier: class InceptionAux, including avetool+conv+fc1+fc2
 class InceptionAux(nn.Module):
     def __init__(self, in_channels, num_classes):
         super(InceptionAux, self).__init__()
@@ -470,7 +462,6 @@ class InceptionAux(nn.Module):
         return x
 
 
-# 类BasicConv2d，包括conv+relu
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(BasicConv2d, self).__init__()

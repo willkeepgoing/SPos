@@ -8,14 +8,14 @@ import time
 import shutil
 
 ''' 
-抽帧
+Video framing
 '''
 
 
-# 每x帧抽取一帧
+# Extract one frame per x frames
 def get_frames(video_name, frame_gap):
     work_path = os.getcwd()
-    os.chdir(work_path)  # 例如f:/video
+    os.chdir(work_path)  # e: f:/video
     v_path = work_path + video_name
     cap = cv2.VideoCapture(v_path)
     frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -34,8 +34,7 @@ def get_image(image_path, output_path):
     imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device = init()
     image = cv2.imread(image_path)
     width = len(image[0])
-    font = ImageFont.truetype("./SourceHanSerif-Heavy.ttc", int(width / 20))  # 字体根据原始视频大小
-    # location_x_all, location_y_all是写字的位置
+    font = ImageFont.truetype("./SourceHanSerif-Heavy.ttc", int(width / 20))  # Font based on original video size
     location_x_all, location_y_all, res_all = one_image_detect(image, imgsz, names, model, net_model_half, net_model_whole,
                                                                bodypix_model, device, colored, save_img, 1)
 
@@ -71,7 +70,7 @@ def clean_output_folder():
         os.mkdir(frames_path)
 
 
-# 每x帧抽取一帧处理，并合成视频
+# Extract one frame per x frames for processing and synthesize the video
 def get_video(video_name, frame_gap, output_name):
     imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device = init()
     work_path = os.getcwd()
@@ -83,7 +82,7 @@ def get_video(video_name, frame_gap, output_name):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(output_name, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height), True)
-    font = ImageFont.truetype("./SourceHanSerif-Heavy.ttc", int(width / 20))  # 字体根据原始视频大小
+    font = ImageFont.truetype("./SourceHanSerif-Heavy.ttc", int(width / 20))
 
     j = 0
     for i in range(int(frame_count)):
@@ -109,7 +108,7 @@ def init():
     imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device = detect_init(imagesz, weights_path, bodypix_model_path,
                                                                         checkpoint_path_half, checkpoint_path_whole, net_half, net_whole)
     global t0
-    print('初始化用时 (%.3fs)' % (time.time() - t0))
+    print('Initialization time (%.3fs)' % (time.time() - t0))
     return imgsz, names, model, net_model_half, net_model_whole, bodypix_model, device
 
 
@@ -131,16 +130,16 @@ if __name__ == '__main__':
     # 'vgg16' or 'resnet18' or 'resnet101' or 'GoogLeNet' or 'VIT' or 'MliT_half' or 'MliT_whole'
     net_half = 'MliT_half'
     net_whole = 'MliT_whole'
-    save_frame = False  # 保存帧
+    save_frame = False
     save_img = False
     colored = True
 
-    if opt.func == 'get_frame':  # 只抽帧
+    if opt.func == 'get_frame':  # Video framing
         get_frames(opt.video_path, opt.frame_gap)
-    elif opt.func == 'get_image':  # 处理图片
+    elif opt.func == 'get_image':  # picture
         out_path = 'output/' + opt.video_path.split('/')[-1].split('.')[0] + '_out.jpg'
         get_image(opt.video_path, out_path)
-    else:  # 处理视频
+    else:  # video
         out_path = 'output/' + opt.video_path.split('/')[-1].split('.')[0] + str(time.time()) + '_out.mp4'
         get_video(opt.video_path, opt.frame_gap, out_path)
     print('共计处理用时 (%.3fs)' % (time.time() - t0))

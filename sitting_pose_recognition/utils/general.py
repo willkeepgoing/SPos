@@ -1,4 +1,4 @@
-# YOLOR general utils
+# YOLO-R general utils
 
 import glob
 import logging
@@ -393,7 +393,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, RIoU
         return iou  # IoU
 
 
-def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=False, alpha=2, eps=1e-9):
+def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=False, RIoU=False, alpha=2, eps=1e-9):
     # Returns tsqrt_he IoU of box1 to box2. box1 is 4, box2 is nx4
     box2 = box2.T
 
@@ -420,7 +420,7 @@ def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=Fals
     # iou = inter / union
     iou = torch.pow(inter/union + eps, alpha)
     # beta = 2 * alpha
-    if GIoU or DIoU or CIoU:
+    if GIoU or DIoU or CIoU or RIoU:
         cw = torch.max(b1_x2, b2_x2) - torch.min(b1_x1, b2_x1)  # convex (smallest enclosing box) width
         ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
         if CIoU or DIoU:  # Distance or Complete IoU https://arxiv.org/abs/1911.08287v1
@@ -436,6 +436,12 @@ def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=Fals
                     alpha_ciou = v / ((1 + eps) - inter / union + v)
                 # return iou - (rho2 / c2 + v * alpha_ciou)  # CIoU
                 return iou - (rho2 / c2 + torch.pow(v * alpha_ciou + eps, alpha))  # CIoU
+            elif RIoU:
+                rho_w2 = ((b2_x2 - b2_x1) - (b1_x2 - b1_x1)) ** 2
+                rho_h2 = ((b2_y2 - b2_y1) - (b1_y2 - b1_y1)) ** 2
+                cw2 = cw ** 2 + eps
+                ch2 = ch ** 2 + eps
+                return iou - (rho2 / c2 + rho_w2 / cw2 + rho_h2 / ch2)
         else:  # GIoU https://arxiv.org/pdf/1902.09630.pdf
             # c_area = cw * ch + eps  # convex area
             # return iou - (c_area - union) / c_area  # GIoU

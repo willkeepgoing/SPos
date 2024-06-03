@@ -11,7 +11,7 @@ import Model
 import sys
 from utils.utils import accuracy
 
-classes = {0: "正面", 1: "左面", 2: "右面"}
+classes = {0: "mid", 1: "left", 2: "right"}
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
@@ -66,8 +66,8 @@ def test(test_loader, model):
         print('\n')
         # predict_file.write(pred_label)
         predict_file.write('\n')
-    predict_file.write("准确率:" + str(right / num * 100) + "%")
-    print("准确率:" + str(right / num * 100) + "%")
+    predict_file.write("Acc:" + str(right / num * 100) + "%")
+    print("Acc:" + str(right / num * 100) + "%")
 
 
 def test_one_image(image, model):
@@ -75,7 +75,7 @@ def test_one_image(image, model):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (config.img_height, config.img_width))
     img = transforms.ToTensor()(image)
-    img = img.unsqueeze(0)  # 增加一个维度
+    img = img.unsqueeze(0)
     img = Variable(img)
     y_pred = model(img)
     smax = nn.Softmax(1)
@@ -86,11 +86,11 @@ def test_one_image(image, model):
     # print(pred_label)
     # print(smax_out.cpu().data.numpy()[0][pred_label])
     if pred_label == 0:
-        result = '这是面向前方的坐姿,置信度为：' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
+        result = 'mid:' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
     elif pred_label == 1:
-        result = '这是面向左侧的坐姿,置信度为：' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
+        result = 'left:' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
     elif pred_label == 2:
-        result = '这是面向右侧的坐姿,置信度为：' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
+        result = 'right:' + str(round(smax_out.cpu().data.numpy()[0][pred_label], 4) * 100) + '%'
     # return result
     print(result)
     return classes[pred_label]
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     font = ImageFont.truetype(fontpath, 32)
     img_pil = Image.fromarray(image)
     draw = ImageDraw.Draw(img_pil)
-    # 绘制文字信息
+    # Draw text information
     draw.text((0, 0), res, font=font, fill=(0, 0, 255))
     bk_img = np.array(img_pil)
 

@@ -2,7 +2,7 @@
 import os, random, shutil
 
 
-# 将图片拆分成训练集train(0.8)和验证集val(0.2)
+# Split the image into training set train (0.8) and validation set val (0.2)
 
 def moveFile(classes, dir, train_ratio=0.8, val_ratio=0.2):
     # if not os.path.exists(os.path.join(Dir, 'train')):
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(Dir):
         for name in dirs:
             folder = os.path.join(root, name)
-            print("正在处理:" + folder)
+            print("Processing:" + folder)
             moveFile(name, root)
         break
 
